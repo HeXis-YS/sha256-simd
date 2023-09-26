@@ -67,11 +67,8 @@ type blockfuncType int
 
 const (
 	blockfuncStdlib blockfuncType = iota
-	blockfuncIntelSha
-	blockfuncAvx2
 	blockfuncAvx
 	blockfuncSsse3
-	blockfuncArmSha2
 	blockfuncForceGeneric = -1
 )
 
@@ -79,16 +76,14 @@ var blockfunc blockfuncType
 
 func init() {
 	switch {
-	case hasIntelSha:
-		blockfunc = blockfuncIntelSha
-	case hasAvx2:
-		blockfunc = blockfuncAvx2
+	case hasIntelSha, hasAvx2:
+		blockfunc = blockfuncStdlib
 	case hasAvx:
 		blockfunc = blockfuncAvx
 	case hasSsse3:
 		blockfunc = blockfuncSsse3
 	case hasArmSha2():
-		blockfunc = blockfuncArmSha2
+		blockfunc = blockfuncStdlib
 	}
 }
 
@@ -271,16 +266,10 @@ func (d *digest) checkSum() (digest [Size]byte) {
 }
 
 func block(dig *digest, p []byte) {
-	if blockfunc == blockfuncIntelSha {
-		blockIntelShaGo(dig, p)
-	} else if blockfunc == blockfuncAvx2 {
-		blockAvx2Go(dig, p)
-	} else if blockfunc == blockfuncAvx {
+	if blockfunc == blockfuncAvx {
 		blockAvxGo(dig, p)
 	} else if blockfunc == blockfuncSsse3 {
 		blockSsseGo(dig, p)
-	} else if blockfunc == blockfuncArmSha2 {
-		blockArmSha2Go(dig, p)
 	} else {
 		blockGeneric(dig, p)
 	}

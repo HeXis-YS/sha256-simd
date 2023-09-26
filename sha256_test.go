@@ -2237,7 +2237,33 @@ func TestGolden(t *testing.T) {
 			}
 		}
 	}
-
+	if hasAvx2 {
+		blockfunc = blockfuncAvx2
+		for _, g := range golden {
+			s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
+			if Sum256([]byte(g.in)) != g.out {
+				t.Fatalf("AVX2: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
+			}
+		}
+	}
+	if hasAvx {
+		blockfunc = blockfuncAvx
+		for _, g := range golden {
+			s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
+			if Sum256([]byte(g.in)) != g.out {
+				t.Fatalf("AVX: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
+			}
+		}
+	}
+	if hasSsse3 {
+		blockfunc = blockfuncSsse3
+		for _, g := range golden {
+			s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
+			if Sum256([]byte(g.in)) != g.out {
+				t.Fatalf("SSSE3: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
+			}
+		}
+	}
 	if hasArmSha2() {
 		blockfunc = blockfuncArmSha2
 		for _, g := range golden {
@@ -2286,6 +2312,15 @@ func BenchmarkHash(b *testing.B) {
 	algos = append(algos, alg{"Generic", blockfuncForceGeneric})
 	if hasIntelSha {
 		algos = append(algos, alg{"IntelSHA", blockfuncIntelSha})
+	}
+	if hasAvx2 {
+		algos = append(algos, alg{"AVX2", blockfuncAvx2})
+	}
+	if hasAvx {
+		algos = append(algos, alg{"AVX", blockfuncAvx})
+	}
+	if hasSsse3 {
+		algos = append(algos, alg{"SSSE3", blockfuncSsse3})
 	}
 	if hasArmSha2() {
 		algos = append(algos, alg{"ArmSha2", blockfuncArmSha2})

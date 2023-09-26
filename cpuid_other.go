@@ -26,6 +26,9 @@ import (
 var (
 	hasIntelSha = runtime.GOARCH == "amd64" && cpuid.CPU.Supports(cpuid.SHA, cpuid.SSSE3, cpuid.SSE4)
 	hasAvx512   = cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ, cpuid.AVX512BW, cpuid.AVX512VL)
+	hasAvx2     = cpuid.CPU.Supports(cpuid.AVX2)
+	hasAvx      = cpuid.CPU.Supports(cpuid.AVX)
+	hasSsse3    = cpuid.CPU.Supports(cpuid.SSSE3)
 )
 
 func hasArmSha2() bool {

@@ -2212,38 +2212,10 @@ var golden = []sha256Test{
 }
 
 func TestGolden(t *testing.T) {
-	blockfuncSaved := blockfunc
-
-	defer func() {
-		blockfunc = blockfuncSaved
-	}()
-
-	if true {
-		blockfunc = blockfuncForceGeneric
-		for _, g := range golden {
-			s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
-			if Sum256([]byte(g.in)) != g.out {
-				t.Fatalf("Generic: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
-			}
-		}
-	}
-
-	if hasAvx {
-		blockfunc = blockfuncAvx
-		for _, g := range golden {
-			s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
-			if Sum256([]byte(g.in)) != g.out {
-				t.Fatalf("AVX: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
-			}
-		}
-	}
-	if hasSsse3 {
-		blockfunc = blockfuncSsse3
-		for _, g := range golden {
-			s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
-			if Sum256([]byte(g.in)) != g.out {
-				t.Fatalf("SSSE3: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
-			}
+	for _, g := range golden {
+		s := fmt.Sprintf("%x", Sum256([]byte(g.in)))
+		if Sum256([]byte(g.in)) != g.out {
+			t.Fatalf("AVX: Sum256 function: sha256(%s) = %s want %s", g.in, s, hex.EncodeToString(g.out[:]))
 		}
 	}
 }
@@ -2276,21 +2248,6 @@ func benchmarkSize(b *testing.B, size int) {
 }
 
 func BenchmarkHash(b *testing.B) {
-	type alg struct {
-		n string
-		t blockfuncType
-	}
-	algos := make([]alg, 0, 2)
-
-	algos = append(algos, alg{"Generic", blockfuncForceGeneric})
-	if hasAvx {
-		algos = append(algos, alg{"AVX", blockfuncAvx})
-	}
-	if hasSsse3 {
-		algos = append(algos, alg{"SSSE3", blockfuncSsse3})
-	}
-	algos = append(algos, alg{"GoStdlib", blockfuncStdlib})
-
 	sizes := []struct {
 		n string
 		f func(*testing.B, int)
@@ -2305,18 +2262,12 @@ func BenchmarkHash(b *testing.B) {
 		{"10M", benchmarkSize, 5 << 21},
 	}
 
-	for _, a := range algos {
-		func() {
-			orig := blockfunc
-			defer func() { blockfunc = orig }()
-
-			blockfunc = a.t
-			for _, y := range sizes {
-				s := a.n + "/" + y.n
-				b.Run(s, func(b *testing.B) { y.f(b, y.s) })
-			}
-		}()
-	}
+	func() {
+		for _, y := range sizes {
+			s := "AVX/" + y.n
+			b.Run(s, func(b *testing.B) { y.f(b, y.s) })
+		}
+	}()
 }
 
 type sha256TestGo struct {

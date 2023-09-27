@@ -1,5 +1,5 @@
-//go:build appengine || noasm || (!amd64 && !arm64) || !gc
-// +build appengine noasm !amd64,!arm64 !gc
+//go:build appengine || noasm || !amd64 || !gc
+// +build appengine noasm !amd64 !gc
 
 /*
  * Minio Cloud Storage, (C) 2019 Minio, Inc.
@@ -21,8 +21,4 @@ package sha256
 
 func blockAvxGo(dig *digest, p []byte) {
 	panic("blockAvxGo called unexpectedly")
-}
-
-func blockSsseGo(dig *digest, p []byte) {
-	panic("blockSsseGo called unexpectedly")
 }

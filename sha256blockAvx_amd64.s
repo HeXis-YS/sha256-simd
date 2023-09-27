@@ -1,4 +1,5 @@
-//+build !noasm,!appengine,gc
+//go:build !noasm && !appengine && gc && amd64
+// +build !noasm,!appengine,gc,amd64
 
 // SHA256 implementation for AVX
 
